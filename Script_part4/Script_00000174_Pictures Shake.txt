@@ -1,0 +1,62 @@
+module Pictures
+  class << self
+    def move_x(pixel,index=3)
+      p = array[index]
+      move(p.x+pixel,p.y,1,index,p.zoom_x,p.zoom_y,p.opacity,2)
+    end
+    
+    def shook(times = 8,index = 3,magnitude = 2)
+      @shaking_state = :left
+      @shake_time = times
+      @shake_magnitude = magnitude
+      @shake_duration = 2
+      self
+    end
+    
+    def shaking?
+      @shaking_state
+    end
+    
+    def update_shake
+    if    @shaking_state == :left
+      move_x(-@shake_magnitude)
+    elsif @shaking_state == :right
+      move_x(+@shake_magnitude)
+    end
+    @shake_duration -= 1
+    if @shake_duration <= 0
+      if @shaking_state == :left
+        @shaking_state = :right
+      else
+       @shaking_state = :left
+      end
+      @shake_time -= 1
+      @shake_duration = 2
+    end
+    if @shake_time <= 0
+      @shaking_state = nil
+    end
+    end
+  end
+end
+
+class Scene_Battle < Scene_Base
+  alias :shake_animation_update_basic :update_basic
+  def update_basic
+    shake_animation_update_basic
+    if Pictures.shaking?
+      Pictures.update_shake
+    end
+  end
+end
+
+class Scene_Map < Scene_Base
+  alias :shake_animation_update_basic :update_basic
+  def update_basic
+    shake_animation_update_basic
+    if Pictures.shaking?
+      Pictures.update_shake
+    end
+  end
+end
+

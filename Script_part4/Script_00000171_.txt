@@ -1,0 +1,48 @@
+#~ map_amount = 200 # how many maps do you have
+#~ map_amount.times do |map_index|
+#~   begin
+#~     map = load_data(sprintf("Data/Map%03d.rvdata2",map_index))
+#~     info = load_data("Data/MapInfos.rvdata2")
+#~   rescue
+#~     next
+#~   end
+#~   map.events.each do |event_id, event|
+#~     event.pages.each_with_index do |page, page_id|
+#~       page.list.each_with_index do |command, command_id|
+#~         next_command = page.list[command_id+1]
+#~         if command.code == 401 && command.parameters[0] =~ /❤/
+#~           p "地圖名稱 ： #{info[map_index].name}, 事件號碼 : #{event_id}, 行數 : #{command_id}"
+#~           p "內容 ： #{command.parameters[0]}"
+#~           p ""
+#~         end
+#~         if command.code == 121 && command.parameters[0] == 186
+#~           p "地圖名稱 ： #{info[map_index].name}, 事件號碼 : #{event_id}, 行數 : #{command_id}"
+#~         end
+#~       end
+#~     end
+#~   end
+#~ end
+
+#~ common_events = load_data("Data/CommonEvents.rvdata2")
+#~ common_events.each_with_index do |event, event_id|
+#~   next unless event
+#~   event.list.each_with_index do |command, command_id|
+#~     next_command = event.list[command_id+1]
+#~     if command.code == 401 && command.parameters[0]==keyword && (next_command.code != 401)
+#~       p "#{keyword} Found on Common Event #{event_id}, Line: #{command_id}"
+#~     end
+#~   end
+#~ end
+
+#~ troops = load_data("Data/Troops.rvdata2")
+#~ troops.each do |troop|
+#~   next unless troop
+#~   troop.pages.each_with_index do |page, page_id|
+#~     page.list.each_with_index do |command, command_id|
+#~       next_command = page.list[command_id+1]
+#~       if command.code == 401 && command.parameters[0]==keyword && (next_command.code != 401)
+#~         p "#{keyword} Found on Troop: #{troop.name}, Page: #{page_id}, Line: #{command_id}"
+#~       end
+#~     end
+#~   end
+#~ end

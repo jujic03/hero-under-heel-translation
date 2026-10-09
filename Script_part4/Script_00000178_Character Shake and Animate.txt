@@ -1,0 +1,65 @@
+class Spriteset_Map
+  attr_accessor :character_sprites
+end
+
+class Scene_Map < Scene_Base
+  attr_accessor :spriteset
+end
+
+class Sprite_Character < Sprite_Base
+  alias :update_shake_position :update_position
+  def update_position
+    update_shake_position
+    update_shake if @character.shaking?
+  end
+
+  def update_shake
+    if    @character.shaking_state == :left
+      self.x = self.x-@character.power
+    elsif @character.shaking_state == :right
+      self.x = self.x+@character.power
+    end
+    @character.duration -= 1
+    if @character.duration <= 0
+      if    @character.shaking_state == :left
+        @character.shaking_state = :right
+      else
+       @character.shaking_state = :left
+      end
+      @character.shake_time -= 1
+      @character.duration = 2
+    end
+    if @character.shake_time <= 0
+      @character.shaking_state = nil
+    end
+  end
+end
+
+class Game_CharacterBase
+  attr_accessor :shaking_state, :shake_time, :duration, :power
+  def shake(times = 12, power = 2)
+    @shaking_state = :left
+    @shake_time = times
+    @duration = 2
+    @power = power
+  end
+
+  def shaking?
+    @shaking_state
+  end
+end
+
+class Game_Character < Game_CharacterBase
+  def animate(anim_name,wait=false)
+    target_anim = []
+    target_anim = $data_animations.select do |anim| 
+      next unless anim
+      anim.name.include?(anim_name.to_s)
+    end
+    return self if target_anim.empty?
+    id = target_anim.last.id
+    @animation_id = id
+    $game_map.interpreter.wait.wait($data_animations[id].frame_max * 5) if wait
+    self
+  end
+end

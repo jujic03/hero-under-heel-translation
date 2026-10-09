@@ -1,0 +1,327 @@
+module Pictures
+  class << self
+    @@x = 320
+    def picture(index) 
+      screen.pictures[index] 
+    end
+      
+    def array()
+      screen.pictures 
+    end
+    
+    def show(path,index=3,x=320,y=480,scale_x=100,scale_y=100,opacity=255,origin=2)
+      return unless path && !path.empty?
+      array[index].show(path, origin, x, y, scale_x, scale_y, opacity, 0)
+      array[index].start_tone_change(screen.tone,0)
+      self
+    end
+
+    def move(x,y,duration=0,index=3,scale_x=100,scale_y=100,opacity=255,origin=2)
+      array[index].move(origin, x, y, scale_x, scale_y, opacity, 0, duration)
+      self
+    end
+    
+    def set_x(value)
+      @@x = value
+    end
+    
+    def reset_x
+      @@x = 320
+    end
+
+    def erase(index=3)
+      array[index].erase
+      debreathe_when_erase(index)
+      self
+    end
+
+    def erase_all
+      99.times do |i|
+        erase(i)
+      end
+      self
+    end
+
+    def fade_out(index = 3)
+      array[index].move(1, 320, 240, 100, 100, 0, 0, 20)
+      self
+    end
+
+    def image_popup(image, sfx = 'Flash1')
+      screen.start_flash(Color.new(255,255,255,255), 20)
+      interpreter.play_se(sfx) if sfx
+      picture = screen.pictures[10] 
+      picture.show(image, 1, 320, 270, 100, 100, 255, 0) rescue p "Picture #{image} not found"
+      picture.move(1, 320, 200, 150, 150, 255, 0, 7)
+      interpreter.wait(7)
+      picture.move(1, 320, 180, 165, 165, 255, 0, 40)
+      interpreter.wait(40)
+      interpreter.play_se('Wind1')
+      picture.move(1, 320, 85, 210, 210, 0, 0, 4)
+      interpreter.wait(4)
+    end
+    
+    def shake(time = 5,index = 3,magnitude = 4)
+      time.times do
+        interpreter.move_pic(320-magnitude,480,1,false,index)
+        interpreter.wait(2)
+        interpreter.move_pic(320+magnitude,480,1,false,index)
+        interpreter.wait(2)
+      end
+      interpreter.move_pic(320,480,1,false,index)
+      self
+    end
+    
+    def shook(time = 5,index = 3,magnitude = 4)
+      time.times do
+        move_x(-magnitude,index)
+        interpreter.wait(2)
+        move_x(+magnitude,index)
+        interpreter.wait(2)
+      end
+      self
+    end
+
+    def animate(anim_name,index=3)
+      id = get_anim_id(anim_name)
+      return self unless id
+      interpreter.anim_pic(id,index)
+      self
+    end
+    
+    def wait(duration)
+      interpreter.wait(duration)
+      self
+    end
+    
+    def se(audio) 
+      interpreter.play_se(audio) 
+      self
+    end
+    
+    def get_anim_id(anim_name)
+      interpreter.get_anim_id(anim_name)
+    end
+    
+    def set_face_pool(array)
+      @face_pool = array
+      self
+    end
+    
+    def set_face_folder(path)
+      @face_path = path
+      self
+    end
+    alias :sff :set_face_folder
+    
+    attr_accessor :last_face
+    def sf(name = nil,index=3) # short for Switch Face
+      return unless @face_path
+      return breathe("#{@face_path}#{name}",index) if !@face_pool && (name.respond_to?(:to_s))
+      
+      if(!name)
+        loop do
+          _face = @face_pool.sample
+          if !@last_face || (_face != @last_face)
+            @last_face = _face
+            break
+          end
+        end
+      elsif(name.respond_to?(:to_s))
+        @last_face = name
+      else
+        return self
+      end
+    
+      breathe("#{@face_path}#{@last_face}",index)
+      self
+    end
+    
+    # short for Show Still Picture
+    def ssp(name,index)
+      name = "#{@face_path}#{name}" if @face_path
+      show(name,index)
+    end
+    
+    def ri # short for Return Idle
+      breathe("#{@face_path}#{@face_pool[0]}")
+      self
+    end
+    
+    def ef
+      erase
+      self
+    end
+    
+    def pulse(id, duration=60, increment=40, opacity=140, pid=99)
+      if id.is_a? Integer
+        filename = screen.pictures[id].name
+        xpos = screen.pictures[id].x
+        ypos = screen.pictures[id].y
+        xzoom = screen.pictures[id].zoom_x
+        yzoom = screen.pictures[id].zoom_y
+        origin = screen.pictures[id].origin
+        if origin == 2
+          screen.pictures[pid].show(filename, 1, 320, 240, 100, 100, opacity, 0)
+          screen.pictures[pid].move(1, 320, 240, 100+increment, 100+increment, 0, 0, duration)
+        else
+          screen.pictures[pid].show(filename, origin, xpos, ypos, xzoom, yzoom, opacity, 0)
+          screen.pictures[pid].move(origin, xpos, ypos, xzoom+increment, yzoom+increment, 0, 0, duration)
+        end
+      else
+        filename = id
+        screen.pictures[pid].show(filename, 1, 320, 240, 100, 100, opacity, 0)
+        screen.pictures[pid].move(1, 320, 240, 100+increment, 100+increment, 0, 0, duration)
+      end
+      self
+    end
+
+    def mist
+      interpreter.play_se("Sand",80,90+rand(40))
+      pulse("Mist1",180,40,200)
+      self
+    end
+    
+    def speed
+      pulse("Speedlines1",100,10,200,81)
+      self
+    end
+    
+    def lick(x,y,image,size=1.0,target_x=15,target_y=150)
+      _scale = 100*size
+      show('Tongue1',9,x,y,_scale,_scale,255,1)
+      breathe(image,8)
+      move(x+(target_x/3),y-(target_y/3),30,9,_scale,_scale)
+      interpreter.wait(20)
+      show('Tongue2',9,x+(target_x/3),y-(target_y/3),_scale,_scale,255,1)
+      move(x+(target_x/3*2),y-(target_y/3*2),15,9,_scale,_scale)
+      interpreter.play_se('Lick1')
+      animate(:flash,8).shake(5,8)
+      move(x+target_x,y-target_y,30,9,_scale,_scale,0)
+      interpreter.wait(20)
+      erase(9)
+      erase(8)
+      self
+    end
+    
+    def flashback(image,animate=:heartbeat,magnitude=1.0)
+      x,y = 320,240
+      [4,5,6].each{|id|show(image,id,x,y,100,100,255,1)}
+      move(x,y,120,6,100+(10*magnitude),100+(10*magnitude),0,1)
+      move(x,y,90,5,100+(50*magnitude),100+(50*magnitude),0,1)
+      move(x,y,50,4,100+(100*magnitude),100+(100*magnitude),0,1)
+      animate(animate,6) if animate
+      self
+    end
+    
+    def fade_black(image='BlackScreen')
+      x,y = 320,480
+      show(image,3,x,y,100,100,0,2)
+      move(x,y,60,3,100,100,255,2)
+      self
+    end
+  end
+end
+
+
+module Pictures
+  @@breathing = []
+  @@zoom_max = rand(30) + 180
+  @@zoom_count = rand(@@zoom_max)
+
+  class << self
+    def interpreter 
+      $game_party.in_battle ? $game_troop.interpreter : $game_map.interpreter
+    end
+    
+    def screen 
+      interpreter.game_screen
+    end
+    
+    def breathe(path, index = 3)
+      return unless path && !path.empty?
+      screen.pictures[index].show(path, 2, @@x, 480, 100, zoom_y, 255, 0)
+      screen.pictures[index].start_tone_change(screen.tone,0)
+      @@breathing << index unless @@breathing.include?(index)
+      self
+    end
+    alias :b :breathe
+
+    def debreathe(index = nil)
+      if index
+        @@breathing.delete(index)
+        screen.pictures[index].erase
+      else
+        debreathe_all
+      end
+    end
+
+    def debreathe_all
+      @@breathing.each do |id|
+        screen.pictures[index].erase
+      end
+      @@breathing = []
+    end
+
+    def debreathe_when_erase(index)
+      debreathe(index) if breathing?(index)
+    end
+
+    def breathing?(index = nil)
+      index ? @@breathing.include?(index) : !@@breathing.empty?
+    end
+    
+    def zoom_y
+      @@zoom_count = 0 if @@zoom_count == @@zoom_max
+      f = Math.sin(Math::PI * @@zoom_count / (@@zoom_max / 2))
+      zoom_y = 100.0 + (f * 0.013 + 0.015) * 100.0
+    end
+
+    def update_breathe
+      @@breathing.each do |id|
+        if @@zoom_max
+          @@zoom_count += 1
+          screen.pictures[id].move(2,@@x,480,100, zoom_y, 255, 0, 1)
+        end
+      end
+    end
+    
+    def update
+      update_breathe if breathing?
+    end
+  end
+end
+
+class Scene_Battle < Scene_Base
+  alias :breathe_animation_update_basic :update_basic
+  def update_basic
+    breathe_animation_update_basic
+    Pictures.update
+  end
+end
+
+class Scene_Map < Scene_Base
+  alias :breathe_animation_update_basic :update_basic
+  def update_basic
+    breathe_animation_update_basic
+    Pictures.update
+  end
+end
+
+class Sprite_Picture < Sprite
+  
+  def update_origin
+    return if @picture.name.empty?
+    case @picture.origin
+      when 0
+        self.ox = 0
+        self.oy = 0
+      when 1
+        self.ox = bitmap.width / 2
+        self.oy = bitmap.height / 2
+      when 2
+        self.ox = bitmap.width / 2
+        self.oy = bitmap.height
+    end
+  end
+end

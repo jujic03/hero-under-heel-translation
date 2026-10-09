@@ -1,0 +1,837 @@
+#------------------------------------------------------------------------------
+#  Pointers
+#------------------------------------------------------------------------------
+module Rose
+  extend self
+
+  def get_binding
+    binding
+  end
+
+  def screen
+    $game_party.in_battle ? $game_troop.screen : $game_map.screen
+  end
+
+  def scene
+    SceneManager.scene
+  end
+
+  def interpreter
+    $game_party.in_battle ? $game_troop.interpreter : $game_map.interpreter
+  end
+
+  def picture
+    Rose::Picture
+  end
+
+  def battler
+    Rose::Battler
+  end
+
+  def messenger
+    Rose::Messenger
+  end
+
+  def events
+    Rose::Events
+  end
+
+  def camera
+    Rose::Camera
+  end
+
+  def wait(duration = 1)
+    interpreter.wait(duration)
+    self
+  end
+
+  def se(name, volume = 80, pitch = 100)
+    interpreter.play_se(name)
+    self
+  end
+
+  def get_animation_id(name)
+    target_anim = []
+    target_anim = $data_animations.select do |anim|
+      next unless anim
+      anim.name == name.to_s
+    end
+    return target_anim.last.id
+  end
+
+  def data_enemy_id
+    [185]
+  end
+
+  def enemy_id
+    21
+  end
+
+  def clamp(value, min, max)
+    return min if (value < min)
+    return max if (value > max)
+    return value
+  end
+end
+
+class Game_Interpreter
+  def se(name, volume = 80, pitch = 100)
+    RPG::SE.new(name, volume, pitch).play
+  end
+
+  def cobweb
+    se("Down1")
+    $game_player.balloon_id = 7
+  end
+
+  def beat
+    $game_player.animate("Heartbeat").shake
+  end
+
+  def smell
+    $game_player.animate("Smell").shake
+    Picture.mist
+  end
+
+  FLASH_ANIMATION_ID = 374
+
+  def question
+    se("Jump1", 30)
+    $game_player.balloon_id = 2
+    $game_player.animation_id = FLASH_ANIMATION_ID
+  end
+
+  def dot
+    se("Jump1", 30)
+    $game_player.balloon_id = 8
+    $game_player.animation_id = FLASH_ANIMATION_ID
+  end
+
+  def exclam
+    se("Jump1", 30)
+    $game_player.balloon_id = 1
+    $game_player.animation_id = FLASH_ANIMATION_ID
+  end
+
+  def angry
+    se("Jump1", 30)
+    $game_player.balloon_id = 5
+    $game_player.animation_id = FLASH_ANIMATION_ID
+  end
+
+  def zoom_out
+    $game_map.effects.set_zoom(100, 40)
+  end
+
+  def zoom_in(magnitude = 1)
+    $game_map.effects.set_zoom(100 + (magnitude * 10), 40)
+  end
+
+  def blur_out(value = 1)
+    $game_map.effects.set_gaussian_blur(value, 40)
+  end
+
+  def blur_in
+    $game_map.effects.set_gaussian_blur(0, 40)
+  end
+
+  def player
+    $game_player
+  end
+
+  def actor_event
+    $game_map.events[45]
+  end
+
+  def show_actor(x = nil, y = nil)
+    $game_switches[41] = true
+    actor_event.moveto(x ? x : player.x, y ? y : player.y)
+    actor_event.set_direction(player.direction)
+    @actor_position = [player.x, player.y]
+    @actor_direction = player.direction
+
+    player.transparent = true
+    player.through_on
+  end
+
+  def hide_actor
+    $game_switches[41] = false
+    actor_event.moveto(0, 0)
+    player.moveto(@actor_position[0], @actor_position[1]) if @actor_position
+    player.set_direction(@actor_direction)
+    player.transparent = false
+    player.through_off
+  end
+end
+
+class Game_Player < Game_Character
+  def through_on
+    @through = true
+  end
+
+  def through_off
+    @through = false
+  end
+
+  attr_accessor :through
+end
+
+#------------------------------------------------------------------------------
+#  Pictures
+#------------------------------------------------------------------------------
+module Rose
+  module Picture
+    include Rose
+    extend self
+
+    def array
+      screen.pictures
+    end
+
+    def picture(index)
+      @@temp_index = index
+      index(@@temp_index)
+      self
+    end
+
+    @@index = 3
+
+    def reset_index
+      @@index = 3
+      self
+    end
+
+    def print(*indexes)
+      indexes.each do |index|
+        picture = array[index]
+        puts "Picture ID: #{picture.number}"
+        puts "Picture Name: #{picture.name}"
+        puts "Picture X Position: #{picture.x}"
+        puts "Picture Y Position: #{picture.y}"
+        puts "Picture Zoom X: #{picture.zoom_x}"
+        puts "Picture Zoom Y: #{picture.zoom_y}"
+        puts "Picture Opacity: #{picture.opacity}"
+        puts "Picture Blend Type: #{picture.blend_type}"
+        puts "Picture Origin: #{picture.origin}"
+      end
+    end
+
+    def get_index
+      @@index
+    end
+
+    def reset
+      @@x = 640/2
+      @@y = 480
+      @@scale_x = 100
+      @@scale_y = 100
+      @@opacity = 255
+      @@origin = 2
+      @@blend_type = 0
+      @@memorize = false
+      self
+    end
+
+    reset
+
+    def index(value)
+      @@index = value
+      self
+    end
+
+    def x(value)
+      value = array[@@index].x if (value == :current)
+      @@x = value
+      self
+    end
+
+    def y(value)
+      value = array[@@index].y if (value == :current)
+      @@y = value
+      self
+    end
+
+    def scale_x(value)
+      value = array[@@index].zoom_x if (value == :current)
+      @@scale_x = value
+      self
+    end
+
+    def scale_y(value)
+      value = array[@@index].zoom_y if (value == :current)
+      @@scale_y = value
+      self
+    end
+
+    def opacity(value)
+      value = array[@@index].opacity if (value == :current)
+      @@opacity = value
+      self
+    end
+
+    def origin(value)
+      value = array[@@index].origin if (value == :current)
+      @@origin = value
+      self
+    end
+
+    def duration(value)
+      @@duration = value
+      self
+    end
+
+    def blend_type(value)
+      value = array[@@index].blend_type if (value == :current)
+      @@blend_type = value
+      self
+    end
+
+    def update
+      update_breathe
+      update_animation
+      save_index
+      update_shake_fiber
+      update_image_popup_fiber
+
+      update_cum_fiber
+      update_pink_fiber
+      load_index
+    end
+
+    def save_index
+      @@temp_index = @@index
+      self
+    end
+
+    def load_index
+      @@index = @@temp_index
+      self
+    end
+
+    def remember
+      @@memorize = true
+      self
+    end
+
+    def draw(path)
+      return unless !path.nil? && !path.empty?
+      puts "Drawing on index #{@@index}."
+      array[@@index].show(path, @@origin, @@x, @@y, @@scale_x, @@scale_y, @@opacity, @@blend_type)
+      if @@memorize
+        @@memorize = false
+      else
+        reset
+      end
+      self
+    end
+
+    @@directory = ""
+
+    def directory(path)
+      return @@directory = "Isabella/" if path == :root
+      @@directory = path
+      self
+    end
+
+    def cg(name)
+      name = name.to_s if name.respond_to?(:to_s)
+      return unless !name.nil? && !name.empty?
+      draw("#{@@directory}#{name}")
+      self
+    end
+
+    def move
+      array[@@index].move(@@origin, @@x, @@y, @@scale_x, @@scale_y, @@opacity, 0, @@duration)
+      if @@memorize
+        @@memorize = false
+      else
+        reset
+      end
+      self
+    end
+
+    def erase(index = nil)
+      if (index.nil?)
+        index = @@index
+        stop
+      end
+      array[index].erase
+      stop_breathe(index)
+      reset
+      self
+    end
+
+    def erase_range(range)
+      range.each { |id| erase(id) }
+      self
+    end
+
+    def clean
+      stop
+      erase_range(1..99)
+    end
+
+    def animate(args)
+      if (args.is_a? String)
+        p Rose.interpreter
+        Rose.interpreter.anim_pic(Rose.get_animation_id(args), @@index)
+      end
+      if (args.is_a? Integer)
+        Rose.interpreter.anim_pic(args, @@index)
+      end
+      if (args.is_a? Symbol)
+        animate(args.to_s)
+      end
+      reset
+      self
+    end
+
+    def wait(duration)
+      Rose.wait(duration)
+      self
+    end
+
+    def shake(time = 5, power = 6)
+      shake_index = @@index
+      @shake_fiber = Fiber.new { shake_fiber(time, power, shake_index) }
+      self
+    end
+
+    def shake_fiber(time, power, index)
+      time.times do
+        index(index).x(@@x + power).scale_y(:current).duration(1).move.wait(2)
+        index(index).x(@@x - power).scale_y(:current).move.wait(2)
+      end
+      index(index).x(@@x).scale_y(:current).duration(1).move
+      @shake_fiber = nil
+    end
+
+    def update_shake_fiber
+      if @shake_fiber
+        @shake_fiber.resume
+      end
+    end
+
+    def image_popup(image, sfx = "Flash1")
+      @popup_fiber = Fiber.new { image_popup_fiber(image, sfx) }
+      self
+    end
+
+    def image_popup_fiber(image, sfx)
+      screen.start_flash(Color.new(255, 255, 255, 255), 20)
+      se(sfx) if sfx
+      index(21).origin(1).x(272).y(270).scale_x(100).scale_y(100).opacity(255).remember.draw(image) rescue p "Picture #{image} not found"
+      y(200).scale_x(150).scale_y(150).duration(7).move.wait(7)
+      index(21).origin(1).y(180).scale_x(165).scale_y(165).duration(40).move.wait(40)
+      se("Wind1")
+      index(21).origin(1).y(85).scale_x(210).scale_y(210).duration(4).opacity(0).move
+      reset_index
+      @popup_fiber = nil
+    end
+
+    def update_image_popup_fiber
+      if @popup_fiber
+        @popup_fiber.resume
+      end
+    end
+
+    def beat
+      animate("Heartbeat").shake
+      self
+    end
+
+    def smell
+      animate("Smell").shake.mist
+      self
+    end
+
+    @@animatable = nil
+    @@animatable_picture_index = 3
+
+    def animatable(*animatable_object)
+      @@animatable = case animatable_object[0]
+        when :player
+          $game_player
+        when :event
+          $game_map.events[animatable_object[1]]
+        when :picture
+          @@animatable_picture_index = @@index
+          self
+        when :battler
+          $game_troop.members[0]
+        end
+      self
+    end
+
+    def cum
+      @cum_fiber = Fiber.new { cum_fiber(@@animatable) }
+      self
+    end
+
+    def cum_fiber(animatable)
+      mist
+      duration = 12
+      draw = ->(index, range) do
+        index(@@animatable_picture_index)
+        animatable.animate("Eject").shake
+        index(index).animate("Come")
+        opacity = 255
+        scale_y = 200
+        scale_y_increase = 2
+        range.each do |i|
+          origin(3).y(0).index(index).scale_x(200).scale_y(scale_y).opacity(opacity).draw(sprintf("Cum/%02d", i))
+          opacity -= 10
+          scale_y += scale_y_increase
+          origin(3).y(0).index(index).scale_x(200).scale_y(scale_y).opacity(opacity).duration(duration).move
+          wait(duration)
+        end
+        origin(3).y(0).index(index).scale_x(200).scale_y(scale_y + scale_y_increase).opacity(0).duration(duration * 2).move
+      end
+      draw.(10, 0..3)
+      draw.(11, 4..7)
+      draw.(12, 8..11)
+      wait(duration * 2)
+      erase_range(10..12)
+      @cum_fiber = nil
+    end
+
+    def update_cum_fiber
+      if @cum_fiber
+        @cum_fiber.resume
+      end
+    end
+
+    def pink
+      @pink_fiber = Fiber.new { pink_fiber }
+      self
+    end
+
+    def stop_pink
+      index(pink_index).opacity(0).duration(100).move
+      @pink_fiber = nil
+      load_index
+      self
+    end
+
+    def pink_index
+      70
+    end
+
+    def pink_fiber
+      while @pink_fiber
+        duration = 100
+        reset
+        index(pink_index).opacity(0).draw("Pink").opacity(255).duration(duration).move.wait(duration)
+        index(pink_index).opacity(255).draw("Pink").opacity(0).duration(duration).move.wait(duration)
+      end
+    end
+
+    def update_pink_fiber
+      if @pink_fiber
+        @pink_fiber.resume
+        load_index
+      end
+    end
+
+    def pulse(id, duration = 60, increment = 40, opacity = 140, pid = 99)
+      if id.is_a? Integer
+        filename = array[id].name
+        xpos = array[id].x
+        ypos = array[id].y
+        xzoom = array[id].zoom_x
+        yzoom = array[id].zoom_y
+        origin = array[id].origin
+        if origin == 2
+          array[pid].show(filename, 1, 320, 240, 100, 100, opacity, 0)
+          array[pid].move(1, 320, 240, 100 + increment, 100 + increment, 0, 0, duration)
+        else
+          array[pid].show(filename, origin, xpos, ypos, xzoom, yzoom, opacity, 0)
+          array[pid].move(origin, xpos, ypos, xzoom + increment, yzoom + increment, 0, 0, duration)
+        end
+      else
+        filename = id
+        array[pid].show(filename, 1, 320, 240, 100, 100, opacity, 0)
+        array[pid].move(1, 320, 240, 100 + increment, 100 + increment, 0, 0, duration)
+      end
+      self
+    end
+
+    def lick(x, y, image, size = 1.0, target_x = 15, target_y = 150, object_index = 8, tongue_index = 9, should_breathe = true)
+    end
+
+    def mist
+      Pictures.mist
+      self
+    end
+
+    def lines
+      Pictures.speed
+      self
+    end
+
+    def tone(*args)
+      args[3] = 0 if args[3].nil?
+      args[4] = 0 if args[4].nil?
+      array[@@index].start_tone_change(Tone.new(args[0], args[1], args[2], args[3]), args[4])
+      self
+    end
+
+    #--------------------------------------------------------------------------
+    # * Breathing
+    #--------------------------------------------------------------------------
+    @@breathing = []
+    @@zoom_max = rand(30) + 180
+    @@zoom_count = rand(@@zoom_max)
+
+    def breathe
+      @@origin = 2
+      @@x = 640/2
+      @@y = 480
+      @@scale_x = 100
+      @@opacity = 255
+      @@duration = 1
+      @@breathing << @@index unless @@breathing.include?(@@index)
+      self
+    end
+
+    def stop_breathe(index)
+      @@breathing.delete(index) if breathing?(index)
+      self
+    end
+
+    def breathing?(index = nil)
+      index ? @@breathing.include?(index) : !@@breathing.empty?
+    end
+
+    def zoom_y
+      @@zoom_count = 0 if @@zoom_count == @@zoom_max
+      f = Math.sin(Math::PI * @@zoom_count / (@@zoom_max / 2))
+      zoom_y = 100.0 + (f * 0.013 + 0.015) * 100.0
+    end
+
+    def update_breathe
+      return unless breathing?
+      @@breathing.each do |id|
+        if @@zoom_max
+          @@zoom_count += 1
+          array[id].move_y(zoom_y, 1)
+        end
+      end
+    end
+
+    #--------------------------------------------------------------------------
+    # * Animating Example
+    # * event = ->(){Rose.picture.index(3).animate("Stroke Once").shake}
+    # * Rose.picture.hit_frame(10).hit_event(event).length(20).play("/__")
+    #--------------------------------------------------------------------------
+    @@animation_index = 3
+
+    def update_animation
+      return if @@path.empty?
+      return if @@stop
+      index(@@animation_index).draw(sprintf("#{@@path}%02d", @@frame))
+      advance_one_frame
+    end
+
+    def play(name)
+      @@animation_index = @@index
+      @@path = name
+      self
+    end
+
+    def stop
+      @@frame = 0
+      @@speed = 20 # fps
+      @@path = ""
+      @@length = 0
+      @@hit_time = 0
+      @@hit_frame = nil
+      @@hit_event = ""
+      @@end_event = ""
+      @@wait = 0
+      @@stop = false
+      @@loop = true
+      @@animation_index = 3
+      self
+    end
+
+    stop
+
+    def wait_for_frames(duration)
+      @@wait = duration
+    end
+
+    def pause
+      @@stop = true
+    end
+
+    def resume
+      @@stop = false
+    end
+
+    def speed(speed)
+      @@speed = speed
+      self
+    end
+
+    def length(length)
+      @@length = length
+      self
+    end
+
+    def hit_event(block)
+      @@hit_event = block
+      self
+    end
+
+    def end_event(block)
+      @@end_event = block
+      self
+    end
+
+    def hit_frame(number)
+      @@hit_frame = number
+      self
+    end
+
+    def loop(bool)
+      @@loop = bool
+      self
+    end
+
+    def advance_one_frame
+      if @@wait > 0
+        @@wait -= 1
+        return
+      end
+
+      interval = 60 / @@speed
+      return unless (Graphics.frame_count % interval) == 0
+
+      if @@frame >= @@length
+        @@frame = 0
+        stop if !@@loop
+      else
+        @@frame += 1
+      end
+      call_hit_event if @@hit_frame && @@frame == @@hit_frame
+      end_event if @@frame == 0
+    end
+
+    def hit_skip?(buffer = 2)
+      return false if @@hit_time == 1
+      return false if buffer == 0
+      return false if @@hit_time % buffer == 1
+      return true
+    end
+
+    def call_hit_event
+      @@hit_time += 1
+      @@hit_event.()
+    end
+
+    def end_event
+      eval(@@end_event)
+    end
+  end
+end
+
+class Game_Picture
+  def drawn?
+    !@name.empty?
+  end
+
+  def move_y(target_y, duration)
+    move(@origin, @x, @y, @zoom_x, target_y, @opacity, @blend_type, duration)
+  end
+end
+
+class Scene_Battle < Scene_Base
+  alias :rose_breathe_animation_update_basic :update_basic
+
+  def update_basic
+    rose_breathe_animation_update_basic
+    Rose::Picture.update
+  end
+end
+
+class Scene_Map < Scene_Base
+  alias :rose_breathe_animation_update_basic :update_basic
+
+  def update_basic
+    rose_breathe_animation_update_basic
+    Rose::Picture.update
+  end
+end
+
+class Sprite_Picture < Sprite
+  alias :third_update_origin :update_origin
+
+  def update_origin
+    third_update_origin
+    if @picture.origin == 3
+      return unless bitmap
+      self.ox = bitmap.width / 2
+      self.oy = 0
+    end
+  end
+end
+
+class Game_CharacterBase
+  attr_accessor :move_speed
+
+  def assign_graphic(character_name, x, y)
+    @tile_id = 0
+    @character_name = character_name
+    @character_index = x / 3
+    @character_index += 4 if (y > 3)
+    @pattern = (x % 3)
+    @original_pattern = @pattern
+    @direction = [2, 4, 6, 8][y % 4]
+    self
+  end
+
+  alias :ag :assign_graphic
+end
+
+class Game_Interpreter
+  def jump_to_label(label)
+    @params[0] = label.to_s
+    command_119
+    @params[0] = ""
+  end
+  
+  def jump_to_end
+    @params[0] = "End"
+    command_119
+    @params[0] = ""
+  end
+end
+
+module Rose
+  module Events
+    include Rose
+    extend self
+    def stop_if_force_move_route(*event_ids)
+      event_ids.each do |event_id|
+        event = event_id == 0 ? $game_player : $game_map.events[event_id]
+        return unless event
+        while event.move_route_forcing
+          $game_map.refresh
+          break unless event.move_route_forcing
+          interpreter.wait(1)
+        end
+      end
+      $game_map.refresh
+    end
+
+    def stop_if(condition)
+      while condition.()
+        $game_map.refresh
+        break unless condition.()
+        interpreter.wait(1)
+      end
+      $game_map.refresh
+    end
+  end
+end

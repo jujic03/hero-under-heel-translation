@@ -1,0 +1,19 @@
+#~ module DataManager
+#~   class << self
+#~     alias :test_setup_new_game :setup_new_game
+#~     def setup_new_game
+#~       test_setup_new_game
+#~       
+#~       
+#~       switches_to_test = []
+#~       
+#~       #21 : Night
+#~       switches_to_test << 21
+#~       switches_to_test && switches_to_test.each{|id|$game_switches[id]=true}
+      
+#~       variable_to_test = {3=>2,}
+      
+#~       variable_to_test.each{|id,value|$game_variables[id]=value}
+#~     end
+#~   end
+#~ end

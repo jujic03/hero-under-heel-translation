@@ -1,0 +1,49 @@
+module YEA
+  module CALL_EVENT
+    PRINT_ERROR = true
+  end
+end
+
+class Game_Interpreter
+  def call_event(event_id, page_id = 1, map_id = nil)
+    page_id = [page_id, 1].max
+    event_id = [event_id, 1].max
+    map_id = $game_map.map_id if map_id.nil?
+    return if call_event_fail?(event_id, page_id, map_id)
+    map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
+    event = map.events[event_id].pages[page_id-1]
+    child = Game_Interpreter.new(@depth + 1)
+    child.setup(event.list, same_map? ? @event_id : 0)
+    child.run
+  end
+  
+  def call_common_event(id)
+    common_event = $data_common_events[id]
+    if common_event
+      child = Game_Interpreter.new(@depth + 1)
+      child.setup(common_event.list, same_map? ? @event_id : 0)
+      child.run
+    end
+  end
+  
+  def call_event_fail?(event_id, page_id, map_id)
+    print_error = YEA::CALL_EVENT::PRINT_ERROR
+    map = load_data(sprintf("Data/Map%03d.rvdata2", map_id))
+    if map.nil?
+      puts "Map:" + map_id.to_s + " isn't a callable map." if print_error
+      return true
+    end
+    event = map.events[event_id]
+    if event.nil?
+      puts "Event:" + event_id.to_s + " isn't a callable event." if print_error
+      return true
+    end
+    page = event.pages[page_id-1]
+    if page.nil?
+      puts "Page:" + page_id.to_s + " isn't a callable page." if print_error
+      return true
+    end
+    return false
+  end
+  
+end

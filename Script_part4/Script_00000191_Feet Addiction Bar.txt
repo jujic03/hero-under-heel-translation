@@ -1,0 +1,106 @@
+module Rose
+  class << self
+    @@feet_addiction_bar_status = nil
+    @@feet_addiction_bar_timer = 0
+    @@feet_addiction_change = 0
+
+    def feet_addiction_variable
+      $game_variables[58]
+    end
+
+    def feet_addiction
+      return case feet_addiction_variable
+      when 0..25  then  :low
+      when 26..50 then  :medium
+      when 51..75 then  :high
+      when 76..99 then  :critical
+      when 100    then  :max
+      else nil
+      end
+    end
+
+    def change_feet_addiction(value)
+      return if @@feet_addiction_bar_status
+      @@feet_addiction_change = value
+      draw_feet_addiction_bar
+    end
+
+    def draw_feet_addiction_bar
+      @@feet_addiction_bar_status = :drawing
+      @@feet_addiction_bar_timer = 20
+      p = "Isabella/Hud/Addiction_"
+      Rose.picture.save_index.index(31).origin(0).x(530).y(11).scale_x(feet_addiction_bar_scale_x).scale_y(100).opacity(255).draw("#{p}Bar")
+      Rose.picture.index(30).origin(0).x(530).y(11).scale_x(100).scale_y(100).opacity(255).draw("#{p}Base")
+      Rose.picture.index(32).origin(1).x(530-3).y(11+4).scale_x(100).scale_y(100).opacity(255).draw("#{p}Icon").load_index
+    end
+
+    def refresh_feet_addiction_bar
+      @@feet_addiction_bar_status = :refreshing
+      @@feet_addiction_bar_timer = 20
+      Rose.interpreter.play_se(@@feet_addiction_change>0 ? 'Recovery' : 'Down3')
+      $game_variables[58] = [[($game_variables[58] + @@feet_addiction_change),0].max,100].min
+      Rose.picture.index(31).origin(0).x(530).y(11).scale_x(feet_addiction_bar_scale_x).scale_y(100).duration(20).opacity(255).move
+    end
+
+    def feet_addiction_bar_scale_x
+      (feet_addiction_variable.to_f/100.0)*100
+    end
+
+    def fade_out_feet_addiction_bar
+      @@feet_addiction_bar_status = :fading
+      @@feet_addiction_bar_timer = 20
+      Rose.picture.index(30).origin(0).x(530).y(11).scale_x(100).scale_y(100).duration(20).opacity(0).move
+      Rose.picture.index(31).origin(0).x(530).y(11).scale_x(feet_addiction_bar_scale_x).scale_y(100).duration(20).opacity(0).move
+      Rose.picture.index(32).origin(1).x(530-3).y(11+4).scale_x(100).scale_y(100).duration(20).opacity(0).move
+    end
+
+    def hold_feet_addiction_bar
+      @@feet_addiction_bar_timer = 60
+    end
+
+    def feet_addiction_bar_update
+      return unless @@feet_addiction_bar_status
+      Rose.picture.save_index
+      if @@feet_addiction_bar_timer <= 0
+        case @@feet_addiction_bar_status
+        when :fading
+          @@feet_addiction_bar_status = nil
+        when :holding
+          @@feet_addiction_bar_status = :fading
+          fade_out_feet_addiction_bar
+        when :refreshing
+          @@feet_addiction_bar_status = :holding
+          hold_feet_addiction_bar
+        when :drawing
+          @@feet_addiction_bar_status = :refreshing
+          refresh_feet_addiction_bar
+        end
+      else
+        @@feet_addiction_bar_timer -= 1
+      end
+      Rose.picture.load_index
+    end
+
+    def normalized_feet_addiction
+      (feet_addiction_variable.to_f/100.0)
+    end
+
+  end
+end
+
+class Scene_Map < Scene_Base
+  alias :rose_feet_addiction_update_basic :update_basic
+  def update_basic
+    rose_feet_addiction_update_basic
+    Rose.feet_addiction_bar_update
+  end
+end
+
+class Scene_Battle < Scene_Base
+  alias :rose_feet_addiction_update_basic :update_basic
+  def update_basic
+    rose_feet_addiction_update_basic
+    Rose.feet_addiction_bar_update
+  end
+end
+

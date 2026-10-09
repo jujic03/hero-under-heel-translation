@@ -1,0 +1,14 @@
+class Window_Message < Window_Base
+  
+  def message_escape_characters(result)
+    result.gsub!(/\eAF\[(\S+?)]/i) { change_face($1.to_s) }
+    return result
+  end
+  
+  def change_face(face_name)
+    return "" if face_name.nil? && !Rose.picture
+    Rose.picture.cg(face_name)
+    return ""
+  end
+
+end

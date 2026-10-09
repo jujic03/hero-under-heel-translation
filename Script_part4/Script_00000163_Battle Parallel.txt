@@ -1,0 +1,16 @@
+class Scene_Battle < Scene_Base
+  alias fai_baco_start start
+  def start
+    pces = $data_common_events.select {|event| event && event.parallel? }
+    @common_events = pces.collect do |common_event|
+      Game_CommonEvent.new(common_event.id)
+    end
+    fai_baco_start
+  end
+
+  alias fai_baco_update_basic update_basic
+  def update_basic
+    @common_events.each{|event|event.refresh; event.update}
+    fai_baco_update_basic
+  end
+end

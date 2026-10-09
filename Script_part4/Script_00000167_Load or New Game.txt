@@ -1,0 +1,19 @@
+module DataManager
+  class << self
+    alias :post_setup_new_game :setup_new_game
+    def setup_new_game
+      post_setup_new_game
+      post_load_events
+    end
+    
+    alias :post_extract_save_contents :extract_save_contents
+    def extract_save_contents(contents)
+      post_extract_save_contents(contents)
+      post_load_events
+    end
+    
+    def post_load_events
+      $game_switches[32] = !$TEST
+    end
+  end
+end

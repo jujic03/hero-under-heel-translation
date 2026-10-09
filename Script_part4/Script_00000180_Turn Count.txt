@@ -1,0 +1,3 @@
+class Game_Troop < Game_Unit
+  attr_accessor   :turn_count   
+end

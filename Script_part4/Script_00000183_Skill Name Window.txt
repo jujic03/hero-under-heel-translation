@@ -1,0 +1,71 @@
+class Window_SkillName < Window_Base
+  def initialize(name)
+    super(x, y, width, height)
+    @name = name
+    self.openness = 0
+    refresh
+    @time = 0
+    @state = :close
+  end
+  
+  def x
+    (Graphics.width - width) / 2
+  end
+  
+  def y
+    10
+  end
+  
+  def width
+    200
+  end
+  
+  def height
+    fitting_height(1)
+  end
+  
+  def duration
+    100
+  end
+  
+  def refresh
+    contents.clear
+    draw_text(0, 0, contents.width, line_height, @name, 1)
+  end
+  
+  def set_skill_name(name)
+    @name = name
+    @time = duration
+    @state = :open
+    open
+    refresh
+  end
+  
+  def update
+    super
+    return unless @state == :open
+    p @time
+    if @time <= 0
+      @state = :close
+      close
+    else
+      @time -= 1
+    end
+  end
+end
+
+
+class Scene_Battle < Scene_Base
+  attr_accessor :skill_name_window
+  alias :skillname_start :start
+  def start
+    skillname_start
+    @skill_name_window = Window_SkillName.new('')
+  end
+end
+
+class Game_Interpreter
+  def show_skill_name(name)
+    SceneManager.scene.skill_name_window.set_skill_name(name)
+  end
+end

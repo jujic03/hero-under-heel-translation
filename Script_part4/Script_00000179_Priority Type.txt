@@ -1,0 +1,17 @@
+class Game_CharacterBase
+  def set_priority(value)
+    @priority_type = value
+  end
+  
+  def i
+    $game_map.interpreter
+  end
+  
+  def fx
+    i.map_effects
+  end
+  
+  def screen
+    i.game_screen
+  end
+end

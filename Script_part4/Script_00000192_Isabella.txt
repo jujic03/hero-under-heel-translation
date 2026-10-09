@@ -1,0 +1,102 @@
+module Isabella
+  extend self
+  def battle_initialization
+    $game_actors[1].learn_skill()
+  end
+  
+  def cg(face=nil)
+    if SceneManager.scene.is_a?(Scene_Battle)
+      $game_troop.members[0].change("Isabella/#{face}") if face
+      return $game_troop.members[0]
+    else
+      Rose.picture.index(2).directory("Isabella/").cg(face.to_s).breathe if face
+      return Rose.picture
+    end
+  end
+  
+  def laugh
+    cg(:Laugh)
+    Rose.se("Laugh3")
+    Rose.picture.shake
+  end
+  
+  def erase
+    if SceneManager.scene.is_a?(Scene_Battle)
+      $game_troop.members[0].erase
+    else
+      cg.erase
+    end
+  end
+  
+  def sock_not_found?
+    $game_party.item_number($data_items[30]) <= 0 || $game_actors[1].equips.include?($data_armors[9])
+  end
+end
+
+class Game_Temp
+  attr_accessor :struggle_proc
+end
+
+class Game_Interpreter
+  def command_101
+    wait_for_message
+    $game_message.face_name = @params[0]
+    $game_message.face_index = @params[1]
+    $game_message.background = @params[2]
+    $game_message.position = @params[3]
+    while continue_message_string?
+      @index += 1
+      if @list[@index].code == 401
+        $game_message.add(@list[@index].parameters[0])
+        check_narration
+      end
+      break if $game_message.texts.size >= Variable.message_rows
+    end
+    case next_event_code
+    when 102
+      @index += 1
+      setup_choices(@list[@index].parameters)
+    when 103
+      @index += 1
+      setup_num_input(@list[@index].parameters)
+    when 104
+      @index += 1
+      setup_item_choice(@list[@index].parameters)
+    end
+    wait_for_message
+  end
+  
+  def check_narration
+    p header_text = $game_message.texts[0].downcase
+    $game_message.background = 1 if $game_message.background == 0 && !(header_text =~ /\\n</ || header_text =~ /\\N</)
+  end
+end
+
+class Game_Actor < Game_Battler
+  alias :isabella_sock_trade_item_with_party :trade_item_with_party
+  def trade_item_with_party(new_item, old_item)
+    if isabella_sock_trade_item_with_party(new_item, old_item)
+      if (old_item == $data_armors[9])
+        $game_party.lose_item(old_item, 1)
+        $game_party.gain_item($data_items[30], 1)
+      end
+      return true
+    end
+  end
+end
+
+class Game_Event < Game_Character
+  alias :extra_conditions_met? :conditions_met?
+
+  def conditions_met?(page)
+    condition = false
+    page.list.each do |cmd|
+      if (cmd.code == 108 || cmd.code == 408)
+        if (cmd.parameters[0] =~ /<conditions\s*:*\s*(.+)>/i)
+          return false if !(eval($1) rescue false)
+        end
+      end
+    end
+    extra_conditions_met?(page)
+  end
+end

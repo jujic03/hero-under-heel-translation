@@ -1,0 +1,45 @@
+
+class Game_CharacterBase
+  attr_accessor :balloon_offset_x, :balloon_offset_y
+
+  alias :offset_initialize :initialize
+
+  def initialize
+    offset_initialize
+    init_offset
+  end
+
+  def init_offset
+    @balloon_offset_x = 0
+    @balloon_offset_y = 0
+  end
+
+  def offset_balloon(x = 0, y = 0)
+    @balloon_offset_x = x
+    @balloon_offset_y = y
+  end
+end
+
+class Sprite_Character < Sprite_Base
+  alias :offset_start_balloon :start_balloon
+
+  def start_balloon
+    return offset_start_balloon unless should_balloon_offset?
+    draw_balloon_with_offset
+  end
+
+  def draw_balloon_with_offset
+    dispose_balloon
+    @balloon_duration = 8 * balloon_speed + balloon_wait
+    @balloon_sprite = ::Sprite.new(viewport)
+    @balloon_sprite.bitmap = Cache.system("Balloon")
+    return unless @character.balloon_offset_x && @character.balloon_offset_y
+    @balloon_sprite.ox = 16 - @character.balloon_offset_x
+    @balloon_sprite.oy = 32 - @character.balloon_offset_y
+    update_balloon
+  end
+
+  def should_balloon_offset?
+    @character.balloon_offset_x != 0 || @character.balloon_offset_y != 0
+  end
+end

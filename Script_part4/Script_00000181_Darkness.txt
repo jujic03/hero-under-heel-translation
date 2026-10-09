@@ -1,0 +1,73 @@
+class Scene_Map < Scene_Base
+  alias :tint_dark_post_transfer :post_transfer
+
+  def post_transfer
+    $game_map.tint_dark
+    tint_dark_post_transfer
+  end
+  
+  if $TEST
+  alias :tint_dark_start :start
+  def start
+    tint_dark_start
+    $game_map.tint_dark 
+  end
+  end
+end
+
+class RPG::Map
+  attr_reader :darkness
+  
+  def load_notetags_darkness
+    @darkness = 0
+    
+    self.note.split(/[\r\n]+/).each do |line|
+      case line
+      when  /<darkness\s*:\s*(\d+)\s*>/i
+        @darkness = $1.to_i 
+      end
+    end
+  end
+end
+
+class Game_Map
+  alias :tint_dark_setup :setup
+  
+  def setup(map_id)
+    tint_dark_setup(map_id)
+    @map.load_notetags_darkness
+  end
+  
+  def tint_dark
+    return unless @effect_surface && @lantern
+    if @map.darkness && @map.darkness > 0
+      @effect_surface.change_color(60,-100,-100,100,@map.darkness)
+      give_lantern
+    elsif $game_switches[21]
+      @effect_surface.change_color(60,-100,-100,100,100)
+      give_lantern
+    else
+      @effect_surface.change_color(60,0,0,0,0)
+      @lantern.hide
+    end
+  end
+  
+  def give_lantern
+    @lantern.change_owner($game_player)
+    @lantern.set_graphic("torch_m")
+    @lantern.set_opacity(180,30)
+    @lantern.show
+  end
+
+  def darkness
+    @map.darkness
+  end
+end
+
+class Game_Interpreter
+  def set_darkness(value)
+    s = $game_map.effect_surface
+    s.set_alpha(200)
+    s.change_color(60,-value,-value,value,value)
+  end
+end

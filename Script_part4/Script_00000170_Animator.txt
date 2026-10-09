@@ -1,0 +1,202 @@
+module Animator
+  @@index = 0
+  @@length = 0
+  @@speed = 20 # fps
+  @@mode = :pingpong
+  @@direction = :forward
+  @@name = ''
+  @@hit_frame = nil
+  @@hit_event = ""
+  @@time = 0
+  @@wait = 0
+  @@end_event = ""
+  @@stop = false
+
+  class << self
+    def update
+      return if @@name.empty?
+      return if @@stop
+      draw
+      advance_one_frame
+    end
+
+    def play(name)
+      @@name = name
+      @@index = (@@length-1) if @@mode.to_s.include?('reverse')
+      self
+    end
+
+    def stop
+      @@name = ''
+      reset
+      self
+    end
+
+    def reset
+      @@index = 0
+      @@speed = 20 # fps
+      @@mode = :pingpong # pingpong , linear
+      @@direction = :forward
+      @@name = ''
+      @@length = 0
+      @@time = 0
+      @@hit_frame = nil
+      @@wait = 0
+      @@stop = false
+    end
+
+    def wait(duration)
+      @@wait = duration
+    end
+
+    def pause
+      @@stop = true
+    end
+
+    def resume
+      @@stop = false
+    end
+
+    def set_mode(name)
+      @@mode = name
+      self
+    end
+
+    def set_speed(speed)
+      @@speed = speed
+      self
+    end
+
+    def set_length(length)
+      @@length = length
+      self
+    end
+
+    def set_hit_event(block)
+      @@hit_event = block
+      self
+    end
+
+    def set_end_event(block)
+      @@end_event = block
+      self
+    end
+
+    def set_hit_frame(number)
+      @@hit_frame = number
+      self
+    end
+
+    def draw
+      name = sprintf("#{@@name}%02d", @@index)
+      
+      Cache.load_bitmap("Graphics/Pictures/",name) rescue return get_correct_length
+      if $game_party.in_battle
+        $game_troop.members[0].change(name)
+      else
+        Pictures.breathe(name)
+      end
+    end
+
+    def get_correct_length
+      length = -1
+      @@length.times do |index|
+        name = sprintf("#{@@name}%02d", index)
+        if File.exist?("Graphics/Pictures/#{name}.png")
+          length = index
+        else
+          if length >= 0
+            return @@length = length
+          else
+            return stop
+          end
+        end
+      end
+    end
+
+    def advance_one_frame
+      if @@wait > 0
+        @@wait -= 1
+        return
+      end
+
+      interval = 60 / @@speed
+      return unless (Graphics.frame_count % interval) == 0
+
+      if @@mode == :pingpong
+        if @@direction == :forward
+          @@index += 1
+        else
+          @@index -= 1
+        end
+          
+        if @@index >= @@length
+          @@direction = :backward
+          hit_event
+        elsif @@index <= 0
+          @@direction = :forward
+        end
+        end_event if @@index == 0
+      elsif @@mode == :linear
+        if @@index >= @@length
+          @@index = 0
+          hit_event unless @@hit_frame
+        else
+          @@index += 1
+          hit_event if @@index == @@hit_frame
+        end
+        end_event if @@index == 0
+      elsif @@mode == :linear_once
+        if @@index >= @@length
+          stop
+        else
+          @@index += 1
+        end
+        hit_event if @@index == @@hit_frame
+        end_event if @@index == 0
+      elsif @@mode == :reverse_once
+        if @@index <= 0
+          stop
+        else
+          @@index -= 1
+        end
+        hit_event if @@index == @@hit_frame
+        end_event if @@index == 0
+      end
+    end
+
+    def hit_skip?(buffer=2, secondary=nil)
+      return false if @@time == 1
+      return false if buffer == 0
+      return false if @@time%buffer == 1
+      return true
+    end
+
+    def hit_event
+      @@time += 1
+      eval(@@hit_event)
+    end
+
+    def end_event
+      eval(@@end_event)
+    end
+  end
+end
+
+class Scene_Battle < Scene_Base
+  alias :animation_update_basic :update_basic
+  def update_basic
+    animation_update_basic
+    if $game_troop.in_battle
+      Animator.update
+    end
+  end
+end
+
+class Scene_Map < Scene_Base
+  alias :animation_update_basic :update_basic
+  def update_basic
+    animation_update_basic
+    Animator.update
+  end
+end

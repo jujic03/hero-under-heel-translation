@@ -1,0 +1,80 @@
+#~ keyword = '蕾菈'
+#~ map_amount = 200 # how many maps do you have
+#~ map_amount.times do |map_index|
+#~   begin
+#~     map = load_data(sprintf("Data/Map%03d.rvdata2",map_index))
+#~   rescue
+#~     next
+#~   end
+#~   map.events.each do |event_id, event|
+#~     event.pages.each_with_index do |page, page_id|
+#~       page.list.each_with_index do |command, command_id|
+#~         if command.code == 121 && command.parameters[0] == 281
+#~           p "Found on Map #{map_index} Event #{event_id}, Page #{page_id} Line #{command_id}"
+#~         end
+#~       end
+#~     end
+#~   end
+#~ end
+    # Replace Event Name
+#~     if event.name =~ /蕾菈/
+#~       event.name.gsub!(/蕾菈/,'梅利亞')
+#~     end
+#~     event.pages.each_with_index do |page, page_id|
+#~       # Replace Character Graphic
+#~       if page.graphic.character_name =~ /Lyla1/
+#~         page.graphic.character_name = 'Melania1'
+#~       end
+#~     
+#~       page.list.each_with_index do |command, command_id|
+#~         next_command = page.list[command_id+1]
+#~         # Replace Text Box
+#~         if command.code == 401 && command.parameters[0].include?(keyword)
+#~           command.parameters[0].gsub!(/蕾菈/,'梅利亞')
+#~           #p "#{keyword} Found on Map: #{map_index}, Event id: #{event_id}, Page: #{page_id}, Line: #{command_id}"
+#~         end
+#~         
+#~         # Replace Move Command
+#~         if command.code == 205
+#~           command.parameters[1].list.each do |move_command|
+#~             if move_command.code == 41 || move_command.code == 45
+#~                if move_command.parameters[0] =~ /Lyla1/
+#~                  p 'replaced!'
+#~                  move_command.parameters[0].gsub!(/Lyla1/,'Melania1')
+#~                end
+#~              end
+#~           end
+#~         end
+#~       end
+#~     end
+#~   end
+#~   save_data(map,sprintf("Data/Map%03d.rvdata2",map_index))
+#~ end
+
+#~ common_events = load_data("Data/CommonEvents.rvdata2")
+#~ common_events.each_with_index do |event, event_id|
+#~   next unless event
+#~   event.list.each_with_index do |command, command_id|
+#~     next_command = event.list[command_id+1]
+#~     if command.code == 401 && command.parameters[0].include?(keyword)
+#~       command.parameters[0].gsub!(/蕾菈/,'梅利亞')
+#~       #p "#{keyword} Found on Common Event #{event_id}, Line: #{command_id}"
+#~     end
+#~   end
+#~ end
+#~ save_data(common_events,"Data/CommonEvents.rvdata2")
+
+#~ troops = load_data("Data/Troops.rvdata2")
+#~ troops.each do |troop|
+#~   next unless troop
+#~   troop.pages.each_with_index do |page, page_id|
+#~     page.list.each_with_index do |command, command_id|
+#~       next_command = page.list[command_id+1]
+#~       if command.code == 401 && command.parameters[0].include?(keyword)
+#~         command.parameters[0].gsub!(/蕾菈/,'梅利亞')
+#~         #p "#{keyword} Found on Troop: #{troop.name}, Page: #{page_id}, Line: #{command_id}"
+#~       end
+#~     end
+#~   end
+#~ end
+#~ save_data(troops,"Data/Troops.rvdata2")

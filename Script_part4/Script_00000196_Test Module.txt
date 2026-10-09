@@ -1,0 +1,44 @@
+#~ module SceneManager
+#~   class << self
+#~     alias :f_s_c_skips_title_screen :first_scene_class
+#~   end
+#~   def self.first_scene_class
+#~     return f_s_c_skips_title_screen if DataManager.save_file_exists?
+#~     DataManager.setup_new_game
+#~     $game_map.autoplay
+#~     Scene_Map
+#~   end
+#~ end
+
+#~ module M5faMes
+#~   BUT = Input::CTRL  #这里设置对话快进的按键，默认为CTRL
+#~ end
+
+#~ class Window_Message < Window_Base
+#~  
+#~   def update_show_fast
+#~     @show_fast = true if Input.trigger?(:C)||Input.press?(M5faMes::BUT)
+#~   end
+#~   def wait_for_one_character
+#~     update_show_fast
+#~     Fiber.yield unless @show_fast || @line_show_fast||Input.press?(M5faMes::BUT)
+#~   end
+#~   def input_pause
+#~     self.pause = true
+#~     wait(1)
+#~     Fiber.yield until Input.trigger?(:B) || Input.trigger?(:C)||Input.press?(M5faMes::BUT)
+#~     Input.update
+#~     self.pause = false
+#~   end
+#~ end
+
+#~ class Game_Player < Game_Character
+#~   def debug_through?
+#~     Input.press?(:CTRL)
+#~   end
+#~ end
+
+#~ class Game_Interpreter
+#~   def command_101
+#~   end
+#~ end

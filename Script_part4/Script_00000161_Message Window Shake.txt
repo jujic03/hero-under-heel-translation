@@ -1,0 +1,64 @@
+class Game_Interpreter
+  def shake_message_window
+    SceneManager.scene.message_window.start_shake(power=10,duration=30)
+  end
+  
+  alias :shake_command_101 :command_101
+  def command_101
+    shake_command_101
+    SceneManager.scene.message_window.stop_shake
+  end
+end
+
+class Scene_Map < Scene_Base
+  attr_accessor :message_window
+end
+
+class Scene_Battle < Scene_Base
+  attr_accessor :message_window
+end
+
+class Window_Message < Window_Base
+  alias :shake_initialize :initialize
+  def initialize
+    shake_initialize
+    clear_shake
+  end
+  
+  def clear_shake
+    @shake_power = 0
+    @shake_duration = 0
+    @shake_direction = 1
+    @shake_cool_down = true
+  end
+  
+  attr_accessor :shake_power, :shake_duration
+  def start_shake(power,duration)
+    @shake_power = power
+    duration += 1 if (duration % 2 == 0)
+    @shake_duration = duration
+    @shake_direction = 1
+  end
+  
+  def stop_shake
+    clear_shake
+    self.x = 0
+  end
+
+  alias :shake_update :update
+  def update
+    shake_update
+    if @shake_duration > 0 && @shake_cool_down
+      @shake_cool_down ^= true
+      self.x += @shake_power * @shake_direction
+      @shake_direction *= -1
+      @shake_duration -= 1
+    else
+      @shake_cool_down ^= true
+    end
+    # 歸位
+    if @shake_duration == 0
+      self.x = 0
+    end
+  end
+end

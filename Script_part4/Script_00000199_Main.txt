@@ -1,0 +1,8 @@
+#==============================================================================
+# ** Main
+#------------------------------------------------------------------------------
+#  This processing is executed after module and class definition is finished.
+#==============================================================================
+Font.default_size = 24
+Font.default_name = ["Microsoft JhengHei"]#["宋体","黑体"]
+rgss_main { SceneManager.run }

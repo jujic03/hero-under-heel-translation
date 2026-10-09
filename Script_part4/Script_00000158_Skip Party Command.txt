@@ -1,0 +1,51 @@
+class Scene_Battle
+  alias u0_custom_create_actor_command_window create_actor_command_window
+  def create_actor_command_window
+    u0_custom_create_actor_command_window
+    @actor_command_window.set_handler(:escape, method(:command_escape))
+  end
+  
+  alias u0_custom_battle_start battle_start
+  
+  def battle_start
+    u0_custom_battle_start
+    @party_command_window.deactivate
+    if BattleManager.input_start
+      command_fight
+    else
+      turn_start
+    end
+  end
+  
+  def turn_end
+    all_battle_members.each do |battler|
+      battler.on_turn_end
+    end
+
+    BattleManager.turn_end
+    process_event
+    start_party_command_selection  
+    if BattleManager.input_start
+      @party_command_window.deactivate
+      command_fight
+    else
+      @party_command_window.deactivate
+      turn_start
+    end
+  end
+end
+
+class Window_ActorCommand
+  alias u0_custom_make_command_list make_command_list
+  def make_command_list
+    u0_custom_make_command_list
+  end
+end
+
+class Window_ActorCommand < Window_Command
+  def add_attack_command
+  end
+  
+  def add_guard_command
+  end
+end
