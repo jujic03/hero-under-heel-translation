@@ -1,0 +1,143 @@
+﻿
+
+
+EVENT   2
+ PAGE   1
+  250(bytes(0x04,0x08,0x6f,0x3a,0x0c,0x52,0x50,0x47,0x3a,0x3a,0x53,0x45,0x08,0x3a,0x0a,0x40,0x6e,0x61,0x6d,0x65,0x49,0x22,0x0c,0x42,0x75,0x7a,0x7a,0x65,0x72,0x31,0x06,0x3a,0x06,0x45,0x54,0x3a,0x0c,0x40,0x76,0x6f,0x6c,0x75,0x6d,0x65,0x69,0x55,0x3a,0x0b,0x40,0x70,0x69,0x74,0x63,0x68,0x69,0x69))
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("門被反鎖了…從右邊離開吧…")
+  0()
+
+
+
+EVENT   7
+ PAGE   1
+  // condition: switch 21 is ON
+  0()
+
+
+
+EVENT   1
+ PAGE   1
+  250(bytes(0x04,0x08,0x6f,0x3a,0x0c,0x52,0x50,0x47,0x3a,0x3a,0x53,0x45,0x08,0x3a,0x0a,0x40,0x6e,0x61,0x6d,0x65,0x49,0x22,0x09,0x4d,0x6f,0x76,0x65,0x06,0x3a,0x06,0x45,0x54,0x3a,0x0c,0x40,0x76,0x6f,0x6c,0x75,0x6d,0x65,0x69,0x55,0x3a,0x0b,0x40,0x70,0x69,0x74,0x63,0x68,0x69,0x69))
+  TeleportPlayer(0,1,7,11,0,0)
+  0()
+
+
+
+EVENT   3
+ PAGE   1
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("\\n<費安娜>怎樣了，鬼鬼祟祟的溜進姨姨的房間是想做什麼？")
+  0()
+ PAGE   2
+  // condition: switch 21 is ON
+  0()
+
+
+
+EVENT   4
+ PAGE   1
+  // condition: switch 21 is ON
+  108("<namepop 高跟鞋>")
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("費安娜的鞋子…")
+  ShowMessageFace("",0,1,2,2)
+  ShowMessage("為什麼…為什麼會走到她的鞋子前…")
+  ShowMessageFace("",0,1,2,3)
+  ShowMessage("明明只是對女人穿過的鞋子…")
+  212(-1,6,false)
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("還沒來得及敝氣，")
+  ShowMessage("鞋子的氣味猶如已經散發到你的面前。")
+  ChangeVariable(35,35,0,4,"'Fiona/Trample1/Faceless1'")
+  ChangeVariable(36,36,0,4,"1")
+  ChangeVariable(37,37,0,4,":flash")
+  RunCommonEvent(20)
+  ShowMessageFace("",0,1,2,4)
+  ShowMessage("又是這股味道…")
+  ShowMessage("不行啊…不能夠再被這股味道控制着…！")
+  ShowMessageFace("",0,1,2,5)
+  ShowMessage("可惡的女人…為什麼我會想…聞她的鞋子…")
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("心胸撲通撲通的亂跳着，")
+  ShowMessage("這大概是身體對於充滿雌性氣味的反應。")
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("心中變到無比的慌亂，")
+  ShowMessage("爭扎着是否要在卑賤的快感前投降。")
+  ShowMessageFace("",0,1,2,6)
+  ShowMessage("別…千萬不要…碰她的鞋子…")
+  ShowMessageFace("",0,1,2,7)
+  ShowMessage("絕對不能跪下來…")
+  ShowMessage("否則就完蛋了…！")
+  ShowChoices(strings("跪下聞鞋…","把鞋子偷走…"),5)
+  IfPlayerPicksChoice(0,null)
+   221()
+   ChangeSwitch(181,181,0)
+   TeleportPlayer(0,69,15,6,0,0)
+   0()
+  IfPlayerPicksChoice(1,null)
+   ShowMessageFace("",0,1,2,8)
+   ShowMessage("為什麼會有把臭鞋子偷走的想法…")
+   ShowMessage("明明是又髒又沒用的東西…")
+   ShowMessageFace("",0,1,2,9)
+   ShowMessage("可是…很想要上面的氣道…")
+   ShowMessage("拿回自己的房間就能盡情的吸…！")
+   ShowMessageFace("",0,0,2,10)
+   ShowMessage("能夠聞着這個奸狡女富商的臭味自慰…")
+   ShowMessageFace("",0,0,2,10)
+   ShowMessage("你回頭看一眼在床上的費安娜…")
+   250(bytes(0x04,0x08,0x6f,0x3a,0x0c,0x52,0x50,0x47,0x3a,0x3a,0x53,0x45,0x08,0x3a,0x0a,0x40,0x6e,0x61,0x6d,0x65,0x49,0x22,0x0a,0x49,0x74,0x65,0x6d,0x33,0x06,0x3a,0x06,0x45,0x54,0x3a,0x0c,0x40,0x76,0x6f,0x6c,0x75,0x6d,0x65,0x69,0x55,0x3a,0x0b,0x40,0x70,0x69,0x74,0x63,0x68,0x69,0x69))
+   355("type = 0")
+   655("id   = 15")
+   655("text = \"道具入手！\"")
+   655("e = $game_temp.streffect")
+   655("e.push(Window_Getinfo.new(id, type, text))")
+   ShowMessageFace("",0,0,2,10)
+   ShowMessage("你趁着費安娜還在熟睡的時候，")
+   ShowMessage("把她的白高跟鞋放進了口袋裡。")
+   ShowMessageFace("",0,0,2,10)
+   ShowMessage("已經硬到不行了…")
+   ShowMessageFace("",0,0,2,10)
+   ShowMessage("犯賤的背德感讓你全身興奮起來。")
+   ShowMessageFace("",0,0,2,10)
+   ShowMessage("把不得馬上\\C[1]回自己的房間\\C[0]，")
+   ShowMessage("對着剛偷來的鞋子自瀆。")
+   0()
+  IfPlayerCancelsChoice()
+   0()
+  404()
+  0()
+ PAGE   2
+  // condition: switch 21 is ON
+  // condition: switch 181 is ON
+  ShowMessageFace("",0,0,2,1)
+  ShowMessage("費安娜的鞋子…")
+  ShowChoices(strings("\\I[122]擼一發"),5)
+  IfPlayerPicksChoice(0,null)
+   ShowMessageFace("",0,1,2,2)
+   ShowMessage("可惡的女人…又要失控向着她的鞋子自慰了…")
+   212(-1,13,true)
+   Wait(20)
+   212(-1,13,true)
+   Wait(20)
+   212(-1,13,true)
+   Wait(20)
+   212(-1,12,true)
+   ShowMessageFace("",0,1,2,3)
+   ShowMessage("…清醒下來了…")
+   0()
+  IfPlayerCancelsChoice()
+   0()
+  404()
+  0()
+ PAGE   3
+  // condition: player has item #15
+  0()
+
+
+
+EVENT   5
+ PAGE   1
+  // condition: switch 21 is ON
+  0()
