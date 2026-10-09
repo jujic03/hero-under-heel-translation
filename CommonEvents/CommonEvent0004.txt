@@ -1,0 +1,20 @@
+﻿// EVENT 0004
+Name "戰後積分計算"
+
+ChangeVariable(6,6,0,4,":D")
+355("@V = $game_variables")
+355("win = $game_switches[23]")
+655("if win")
+655("turn,max_turn = $game_troop.turn_count,20")
+655("score = [turn,max_turn].min/max_turn*100")
+655("$game_variables[6] = [:AA,:AAA,:S][(score/50).to_i]")
+655("p \"回合:#{turn},回合分數:#{[turn,max_turn].min/max_turn*100}\"")
+655("else")
+655("damage_dealt,mhp = $game_variables[7],$game_troop.members[0].mhp")
+655("score = [damage_dealt.to_f,mhp].min/mhp*100")
+655("$game_variables[6] = [:E,:D,:C,:B,:A][(score/25).to_i]")
+655("p \"累計總傷害:#{damage_dealt},傷害分數:#{[damage_dealt.to_f,mhp].min/mhp*100}\"")
+655("end")
+ShowMessageFace("",0,0,2,1)
+ShowMessage("表現評價:\\C[1]\\V[6]\\C[0]")
+0()

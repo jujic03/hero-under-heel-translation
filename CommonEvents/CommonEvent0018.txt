@@ -1,0 +1,6 @@
+﻿// EVENT 0018
+Name "睡覺插入事件"
+
+RunCommonEvent(19)
+RunCommonEvent(30)
+0()

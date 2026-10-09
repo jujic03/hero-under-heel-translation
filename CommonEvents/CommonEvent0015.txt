@@ -1,0 +1,8 @@
+﻿// EVENT 0015
+Name "戰鬥後清理"
+
+221()
+RunCommonEvent(13)
+ChangeSwitch(30,30,1)
+Wait(10)
+0()

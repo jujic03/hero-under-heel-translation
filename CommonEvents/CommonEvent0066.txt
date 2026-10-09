@@ -1,0 +1,10 @@
+﻿// EVENT 0066
+Name "伊莎貝菈敗北總匯"
+
+RunCommonEvent(13)
+355("Rose.picture.stop_pink.clean")
+ChangeSwitch(321,321,1)
+ChangeSwitch(327,327,1)
+ChangeVariable(61,61,1,0,1)
+313(0,1,1,10)
+0()

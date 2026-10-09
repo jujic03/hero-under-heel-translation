@@ -1,0 +1,11 @@
+﻿// EVENT 0064
+Name "平衡對白"
+
+355("@dialogues = $game_variables[62]")
+355("if @dialogues.respond_to?(:each)")
+655("@dialogues.each do |msg|")
+655("dm(msg)")
+655("wait(180)")
+655("end")
+655("end")
+0()

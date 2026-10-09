@@ -1,0 +1,23 @@
+﻿// EVENT 0039
+Name "重置"
+
+ChangeSwitch(251,251,1)
+ChangeSwitch(252,252,1)
+ChangeSwitch(253,253,1)
+ChangeSwitch(255,255,1)
+ChangeSwitch(256,256,1)
+ChangeSwitch(257,257,1)
+ChangeSwitch(258,258,1)
+ChangeSwitch(260,260,1)
+ChangeSwitch(261,261,1)
+ChangeSwitch(262,262,1)
+ChangeSwitch(263,263,1)
+ChangeSwitch(267,267,1)
+ChangeSwitch(268,268,1)
+ChangeSwitch(269,269,1)
+ChangeSwitch(270,270,1)
+ChangeSwitch(271,271,1)
+ChangeVariable(51,51,0,0,0)
+ChangeVariable(50,50,0,0,0)
+ChangeVariable(49,49,0,0,0)
+0()

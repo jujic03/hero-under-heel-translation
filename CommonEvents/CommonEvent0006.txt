@@ -1,0 +1,18 @@
+﻿// EVENT 0006
+Name "戰前重設"
+
+ChangeSwitch(23,23,1)
+ChangeVariable(7,7,0,0,0)
+ChangeVariable(8,8,0,4,"\"\"")
+ChangeVariable(22,22,0,4,":Idle")
+ChangeVariable(23,23,0,0,0)
+313(0,0,0,10)
+333(-1,0,10)
+108("舊存檔補救")
+355("if $game_actors[1].skills.empty?")
+655("$game_actors[1].damage = []")
+655("$game_actors[1].init_skills ")
+655("end")
+355("@V = $game_variables")
+355("eval(@V[29]) if @V[29].is_a? String")
+0()

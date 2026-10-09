@@ -1,0 +1,14 @@
+﻿// EVENT 0013
+Name "返回總匯"
+
+108("清除圖片")
+ChangeVariable(28,28,0,4,"''")
+ChangeSwitch(30,30,1)
+Wait(10)
+355("(1..10).each{|i|erase_pic(i)}")
+355("Rose.picture.stop.erase")
+108("戰鬥者圖片返回")
+355("member = $game_troop.members[0]")
+655("member.change(\"#{member.folder_name}/#{member.idle_name}\")")
+ChangeVariable(22,22,0,4,":Idle")
+0()

@@ -1,0 +1,15 @@
+﻿// EVENT 0010
+Name "戰後獎勵處理"
+
+355("@V=$game_variables")
+655("gold,item=@V[15],@V[16]")
+655("se_play('Item3')")
+655("$game_message.add('\\C[1]戰鬥獎勵\\C[0]')")
+655("$game_party.gain_gold(gold)")
+655("$game_message.add(\"獲得#{gold}金幣！\")")
+655("item.each do |i|")
+655("data=$data_items[i[0]]")
+655("$game_party.gain_item(data,i[1])")
+655("$game_message.add(\"獲得#{i[1]}個\\\\I[#{data.icon_index}]#{data.name}！\")")
+655("end")
+0()

@@ -1,0 +1,10 @@
+﻿// EVENT 0036
+Name "自慰平衡事件"
+
+StartLoop()
+ 355("Pictures.animate(:stroke).shook(12)")
+ 225(2,2,20,false)
+ Wait(60)
+ 0()
+EndLoop()
+0()

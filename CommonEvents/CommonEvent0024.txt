@@ -1,0 +1,17 @@
+﻿// EVENT 0024
+Name "煙霧效果"
+
+355("@V = $game_variables")
+StartLoop()
+ 355("path = @V[43] # [43 : 煙霧名稱]")
+ 655("x,y = 320,240")
+ 655("picture = game_screen.pictures[4]")
+ 655("")
+ 655("loop do")
+ 655("make_pic(path,4,0,x,y,1)")
+ 655("picture.move(1,x,y,105,105,255,0,100);wait(100)")
+ 655("picture.move(1,x,y,120,120,0,0,400);wait(300)")
+ 655("end")
+ 0()
+EndLoop()
+0()

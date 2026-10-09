@@ -1,0 +1,11 @@
+﻿// EVENT 0014
+Name "戰鬥中平衡事件"
+
+355("@V = $game_variables")
+355("@parallel = @V[28]")
+655("@index = @list.size unless @parallel")
+StartLoop()
+ 355("eval(@parallel)")
+ 0()
+EndLoop()
+0()

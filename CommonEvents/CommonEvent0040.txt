@@ -1,0 +1,23 @@
+﻿// EVENT 0040
+Name "截擊"
+
+355("@Melania = $game_troop.members[0]")
+355("@V = $game_variables")
+355("@battler = $game_troop.active_battler")
+If(4,1,6,9)
+ 355("@Melania.set_msg1('想要對你進行攻擊…！').act")
+ 313(0,0,1,9)
+ ChangeVariable(11,11,0,0,50)
+ RunCommonEvent(9)
+ If(12,"@V[12] > 0.99")
+  355("$game_troop.members[0] && $game_troop.members[0].damage.push(['完美截擊'])")
+  ChangeVariable(11,11,0,0,30)
+  RunCommonEvent(8)
+  337(-1,15)
+  355("@battler.set_msg1('向對手還以一記\\I[11]直拳截擊！').set_damage(4*@V[12]).attack")
+  JumpToLabel("攻擊完畢")
+  0()
+ EndIf()
+ 0()
+EndIf()
+0()

@@ -1,0 +1,19 @@
+﻿// EVENT 0054
+Name "投降總匯"
+
+355("@V = $game_variables")
+355("@enemy = @V[57]")
+If(12,"@enemy == :喬安娜")
+ 355("@J = $game_troop.members[0]")
+ 355("@J.sff 'Joanna/Lose/'")
+ 355("@J.sf :Kneel")
+ 355("@J.anim(:kneel).shake")
+ 242(2)
+ ShowMessageFace("",0,0,2,1)
+ ShowMessage("你失去了戰鬥的意志，跪在喬安娜的面前…")
+ ShowMessage("乞求她的寛恕。")
+ 355("@J.finish('的威嚴迫使你放棄戰鬥！')")
+ ChangeSwitch(296,296,0)
+ 0()
+EndIf()
+0()

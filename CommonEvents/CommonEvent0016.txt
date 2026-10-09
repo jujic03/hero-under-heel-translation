@@ -1,0 +1,15 @@
+﻿// EVENT 0016
+Name "阻截總匯"
+
+355("@V = $game_variables")
+ChangeSwitch(31,31,1)
+If(12,"@V[22] == :Guard")
+ If(12,"$game_troop.members[0].battler_data_id == 5")
+  ChangeSwitch(31,31,0)
+  RunCommonEvent(17)
+  EndEventProcessing()
+  0()
+ EndIf()
+ 0()
+EndIf()
+0()
