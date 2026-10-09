@@ -1,0 +1,12 @@
+class Game_Enemy < Game_Battler
+   
+  attr_accessor :folder_name
+  attr_accessor :idle_name
+  
+  alias :enemy_tag_initialize :initialize
+  def initialize(index, enemy_id)
+    enemy_tag_initialize(index, enemy_id)
+    @folder_name = enemy.note =~ /<folder name = (.+)>/i ? $1 : nil 
+    @idle_name = enemy.note =~ /<idle name = (\w+)>/i ? $1 : nil 
+  end  
+end

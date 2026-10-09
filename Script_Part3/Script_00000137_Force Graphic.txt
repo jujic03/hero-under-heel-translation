@@ -1,0 +1,21 @@
+class Game_CharacterBase
+  # 0: X
+  # 1: Y
+  def force_graphic(x,y)
+    pattern = x-1
+    @pattern, @original_pattern = pattern, pattern
+
+    @direction = [2,4,6,8][y-1]
+#~    @direction_fix = true
+  end
+  alias :fg :force_graphic
+  
+  def sfg(name,index,x,y)
+    set_graphic(name.to_s,index)
+    force_graphic(x,y)
+  end
+  
+  def i
+    $game_map.interpreter
+  end
+end

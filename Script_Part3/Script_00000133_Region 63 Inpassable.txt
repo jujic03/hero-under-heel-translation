@@ -1,0 +1,7 @@
+class Game_CharacterBase
+  alias collide_with_characters_without_region? collide_with_characters?
+  def collide_with_characters?(x, y)
+    collide_with_characters_without_region?(x, y) ||
+      $game_map.region_id(x, y) == 63
+  end
+end

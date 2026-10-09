@@ -1,0 +1,309 @@
+#------------------------------------------------------------------------------
+#  Reset Cinematic Switches
+#------------------------------------------------------------------------------
+class Game_Interpreter
+  def reset_cinematic_switches
+    (1..20).each{|i|$game_switches[i]=false}
+  end
+end
+#------------------------------------------------------------------------------
+#  Auto Fade In
+#------------------------------------------------------------------------------
+class Scene_Map < Scene_Base
+  alias :auto_fadein_post_transfer :post_transfer
+  def post_transfer
+    $game_map.auto_fade_in
+    auto_fadein_post_transfer
+  end
+end
+
+class RPG::Map
+  attr_reader :always_bright
+  def load_notetags_auto_fadein
+    @always_bright = false
+    
+    self.note.split(/[\r\n]+/).each do |line|
+      case line
+      when /<(?:ALWAYS BRIGHT|Always bright|Always Bright|always bright)>/
+        @always_bright = true
+      end
+    end
+  end
+end
+
+class Game_Map
+  alias :auto_fade_in_setup :setup
+  def setup(map_id)
+    auto_fade_in_setup(map_id)
+    @map.load_notetags_auto_fadein
+  end
+    
+  def auto_fade_in
+    if @map.always_bright && @interpreter.game_screen.brightness < 255
+      @interpreter.game_screen.start_fadein(30)
+    end
+  end
+end
+#------------------------------------------------------------------------------
+#  Show Dots
+#------------------------------------------------------------------------------
+class Game_Interpreter
+  def show_dots
+    show_dynamic_msg('\i[4]...') rescue nil
+  end
+end
+
+class Game_Interpreter
+	def shake_screen
+    game_screen.start_shake(2, 2, 10)
+  end
+  
+  def shake_pic
+    7.times do
+      move_pic(4,0,2,true)
+      move_pic(-4,0,2,true)
+    end
+  end
+end
+#------------------------------------------------------------------------------
+#  Tint Over Picture
+#------------------------------------------------------------------------------
+class Game_Picture
+  alias :tint_over_create :create
+  def create(name, opacity, x, y, origin, fixed)
+    @tone = $game_map.screen.tone   if SceneManager.scene_is?(Scene_Map)
+    @tone = $game_troop.screen.tone if SceneManager.scene_is?(Scene_Battle)
+    tint_over_create(name, opacity, x, y, origin, fixed)
+  end
+end
+#------------------------------------------------------------------------------
+#  SE
+#------------------------------------------------------------------------------
+class Game_Interpreter
+  def se_play(filename,volume=80,pitch=100)
+    RPG::SE.new(filename, volume, pitch).play
+  end
+  alias :play_se :se_play
+end
+#------------------------------------------------------------------------------
+#  Battler Wrapper
+#------------------------------------------------------------------------------
+class Game_Battler < Game_BattlerBase
+  alias :log_damage_execute_damage :execute_damage
+  def execute_damage(user)
+    log_damage_execute_damage(user)
+    $game_variables[7] = $game_variables[7] + @result.hp_damage if user.is_a?(Game_Actor)
+  end
+
+  def attack
+    data.scope, data.damage.type = 1, 1
+    use
+  end
+  
+  def act
+    data.scope, data.damage.type = 0, 0
+    use
+  end
+  alias :guard :act
+
+  def finish(msg = '')
+    set_msg1('\i[1]'+msg)
+    set_formula("9999")
+    attack
+  end
+
+  def heal(health = 250)
+    return 'Health should be in interger!' unless health.respond_to?(:to_s)
+    set_formula(health.to_s)
+    data.scope, data.damage.type = 7, 3
+    use
+  end
+
+  def drain
+    data.scope, data.damage.type = 1, 5
+    use
+  end
+
+  def data() $data_skills[1] end
+
+  def use
+    force_action(1, -1)
+    BattleManager.force_action(self)
+    Fiber.yield while BattleManager.action_forced? rescue nil
+    reset
+  end
+
+  def reset
+    set_msg1("")
+    set_msg2("")
+    set_formula("a.atk*4-b.def*2")
+  end
+
+  def set_msg1(msg)
+    data.message1 = msg
+    self
+  end
+  alias set_msg set_msg1
+
+  def set_msg2(msg)
+    data.message2 = msg
+    self
+  end
+
+  def set_formula(formula)
+    data.damage.formula  = formula
+    self
+  end
+
+  def set_damage(intensity)
+    set_formula("a.atk*#{intensity}-b.def*2")
+    self
+  end
+
+  alias :log_skill_use_item :use_item
+  def use_item(item)
+    log_skill_use_item(item)
+    $game_variables[8] = item.name
+    $game_troop.active_battler = self
+  end
+  
+  def set_battler_data_id(value)
+    @battler_data_id = value
+    self
+  end
+  
+  def battler_data_id
+    @battler_data_id || 1
+  end
+  
+  def battler_data
+    $data_enemies[battler_data_id]
+  end
+  
+  def change(name)
+    battler_data.battler_name = name
+    transform(battler_data_id)
+    @screen_x = 640/2
+    @screen_y = 480
+    self
+  end
+  
+  def sff(path)
+    @folder = path
+    self
+  end
+  
+  #short for change
+  def c(face)
+    return unless @folder
+    change("#{@folder}#{face.to_s}")
+    self
+  end
+  alias :sf :c
+
+  def move(x,y)
+    @screen_x, @screen_y = x, y
+    transform(battler_data_id)
+    self
+  end
+  
+  def shake(time = 5)
+    time.times do
+      move(324,480)
+      wait(2)
+      move(316,480)
+      wait(2)
+    end
+    move(320,480)
+    self
+  end
+  
+  def wait(duration)
+    interpreter.wait(duration)
+  end
+  
+  def erase
+    battler_data.battler_name = ""
+    transform(battler_data_id)
+    self
+  end
+  
+  def interpreter
+    $game_troop.interpreter
+  end
+  
+  def animate(anim_name,wait=false)
+    id = interpreter.get_anim_id(anim_name)
+    p id
+    @animation_id = id
+    interpreter.wait($data_animations[id].frame_max * 5) if wait
+    self
+  end
+  
+  def anim(anim_name)
+    animate(anim_name,false)
+    self
+  end
+  
+  def mist
+    Pictures.mist
+    self
+  end
+  
+  def red_flash
+    interpreter.game_screen.start_flash_for_damage
+    self
+  end
+end
+
+class Game_Troop < Game_Unit
+  attr_accessor :active_battler
+end
+
+class Game_Interpreter
+  def v 
+    $game_variables
+  end
+  
+  def s
+    $game_switches
+  end
+  
+  def ss(string, switch)
+    _ss = $game_self_switches
+    map = $game_map
+    map.events.each do |key,value|
+      if value.event.name =~ /#{string}/
+        _ss[[map.map_id, key, switch.to_s]] ^= true
+      end
+    end
+    wait(10)
+  end
+  
+  def set_face_pool(array)
+    @face_pool = array
+  end
+  
+  def set_face_folder(path)
+    @face_path = path
+  end
+  
+  attr_accessor :last_face
+  def sf
+    return unless @face_pool && @face_path
+    
+    loop do
+      _face = @face_pool.sample
+      if !@last_face || (_face != @last_face)
+        @last_face = _face
+        break
+      end
+    end
+  
+    make_pic("#{@face_path}#{@last_face}")
+  end
+  
+  def ef
+    erase_pic
+  end
+end

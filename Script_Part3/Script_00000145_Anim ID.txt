@@ -1,0 +1,45 @@
+class Game_Interpreter
+  def get_anim_id(args)
+    if (args.is_a?(Symbol))
+      anim_id = case args
+      when :action        then 1
+      when :flash         then 1
+      when :heartbeat     then 3
+      when :pee           then 4
+      when :damage        then 5
+      when :smell         then 6
+      when :lick          then 7
+      when :struggle      then 10
+      when :restrain      then 10
+      when :kneel         then 11
+      when :cum           then 12
+      when :stroke        then 13
+      when :silent_action then 14
+      when :sleep         then 18
+      when :heavy_damage  then 20
+      when :touch         then 21
+      when :broom         then 23
+      when :fart          then 25
+      when :spit          then 69
+      when :slash         then 27
+      end
+      return anim_id
+    end
+    if (args.is_a?(String))
+      p get_animation_id(args)
+      return get_animation_id(args)
+    end
+    if (args.is_a?(Integer))
+      return args
+    end
+  end
+  
+  def get_animation_id(name)
+    target_anim = []
+    target_anim = $data_animations.select do |anim|
+      next unless anim
+      name =~ /^#{anim.name.to_s}$/
+    end
+    return target_anim.last.id
+  end
+end
